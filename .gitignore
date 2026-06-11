@@ -1,0 +1,54 @@
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE Files
+# =========================
+.idea/
+.vscode/
+*.iml
+
+# =========================
+# Backend (Spring Boot)
+# =========================
+backend/target/
+backend/.mvn/
+
+*.class
+*.jar
+*.war
+
+# Application Secrets
+backend/src/main/resources/application.properties
+
+# Logs
+*.log
+logs/
+
+# =========================
+# Frontend (React + Vite)
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+# Environment Variables
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# =========================
+# Cache Files
+# =========================
+.cache/
+.parcel-cache/
+.eslintcache
+
+# =========================
+# Temporary Files
+# =========================
+*.tmp
+*.temp
