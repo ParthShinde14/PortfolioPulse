@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  DollarSign, TrendingUp, TrendingDown, Briefcase, Plus, Minus
+  DollarSign, TrendingUp, TrendingDown, Briefcase, Plus, Minus,
+  Shield, PieChart as PieIcon, AlertTriangle, ArrowRight
 } from 'lucide-react';
-import { getDashboard } from '../api/client';
-import type { Dashboard } from '../types';
+import { getDashboard, getRiskMetrics } from '../api/client';
+import type { Dashboard, RiskMetrics } from '../types';
 import Header from '../components/layout/Header';
 import StatCard from '../components/ui/StatCard';
 import { CardSkeleton, ChartSkeleton, TableSkeleton } from '../components/ui/Skeleton';
@@ -11,6 +13,7 @@ import TradeModal from '../components/ui/TradeModal';
 import GrowthChart from '../components/charts/GrowthChart';
 import AllocationChart from '../components/charts/AllocationChart';
 import EmptyState from '../components/ui/EmptyState';
+import HealthScoreRing from '../components/ui/HealthScoreRing';
 import { fmt, profitClass } from '../utils/format';
 
 export default function DashboardPage() {
@@ -19,6 +22,10 @@ export default function DashboardPage() {
   const [error, setError]     = useState('');
   const [modal, setModal]     = useState<'buy' | 'sell' | null>(null);
 
+  // Portfolio Health & Risk snapshot (additive — independent of main dashboard load)
+  const [risk, setRisk]               = useState<RiskMetrics | null>(null);
+  const [riskLoading, setRiskLoading] = useState(true);
+
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try { setData(await getDashboard()); }
@@ -26,9 +33,17 @@ export default function DashboardPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  const loadRisk = useCallback(async () => {
+    setRiskLoading(true);
+    try { setRisk(await getRiskMetrics()); }
+    catch { /* non-critical — silently ignore on dashboard */ }
+    finally { setRiskLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); loadRisk(); }, [load, loadRisk]);
 
   const d = data;
+  const hasRisk = risk && risk.diversificationRating !== 'N/A';
 
   return (
     <div className="flex flex-col flex-1 overflow-auto">
@@ -93,6 +108,76 @@ export default function DashboardPage() {
                 iconColor="bg-amber-50 text-amber-600"
               />
             </>
+          )}
+        </div>
+
+        {/* Portfolio Health snapshot */}
+        <div className="bg-white rounded-xl border border-surface-200 shadow-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Shield size={16} className="text-brand-600" />
+              <p className="section-title mb-0">Portfolio Health Snapshot</p>
+            </div>
+            <Link
+              to="/health"
+              className="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center gap-1 transition-colors"
+            >
+              View full Health & Risk Center <ArrowRight size={12} />
+            </Link>
+          </div>
+
+          {riskLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
+            </div>
+          ) : !hasRisk ? (
+            <EmptyState
+              icon={Shield}
+              title="No health data yet"
+              description="Buy your first stock to see diversification and risk scores."
+            />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+              {/* Health score ring */}
+              <div className="flex items-center justify-center">
+                <HealthScoreRing score={risk!.healthScore} rating={risk!.healthRating} size={110} />
+              </div>
+
+              {/* Diversification */}
+              <div className="bg-surface-50 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <PieIcon size={14} className="text-blue-600" />
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Diversification</p>
+                </div>
+                <p className="text-xl font-semibold text-slate-800">{risk!.diversificationScore.toFixed(0)} / 100</p>
+                <p className="text-xs text-slate-400 mt-1">{risk!.diversificationRating}</p>
+              </div>
+
+              {/* Largest position */}
+              <div className="bg-surface-50 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <AlertTriangle size={14} className="text-amber-600" />
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Largest Position</p>
+                </div>
+                <p className="text-xl font-semibold text-slate-800 font-mono">{risk!.largestPositionSymbol}</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {fmt.percent(risk!.largestPositionPercent).replace('+', '')} · {risk!.largestPositionRisk} risk
+                </p>
+              </div>
+
+              {/* Sector concentration */}
+              <div className="bg-surface-50 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Shield size={14} className={risk!.sectorConcentrationWarning ? 'text-red-600' : 'text-emerald-600'} />
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Dominant Sector</p>
+                </div>
+                <p className="text-xl font-semibold text-slate-800">{risk!.dominantSector}</p>
+                <p className={`text-xs mt-1 ${risk!.sectorConcentrationWarning ? 'text-red-600 font-medium' : 'text-slate-400'}`}>
+                  {fmt.percent(risk!.dominantSectorPercent).replace('+', '')}
+                  {risk!.sectorConcentrationWarning ? ' · Concentration warning' : ''}
+                </p>
+              </div>
+            </div>
           )}
         </div>
 

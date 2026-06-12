@@ -4,6 +4,7 @@ import DashboardPage    from './pages/DashboardPage';
 import HoldingsPage     from './pages/HoldingsPage';
 import TransactionsPage from './pages/TransactionsPage';
 import AnalyticsPage    from './pages/AnalyticsPage';
+import HealthCenterPage from './pages/HealthCenterPage';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="/holdings"     element={<HoldingsPage />}     />
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/analytics"    element={<AnalyticsPage />}    />
+          <Route path="/health"       element={<HealthCenterPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

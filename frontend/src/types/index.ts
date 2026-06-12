@@ -109,3 +109,58 @@ export interface TransactionRequest {
   transactionDate: string;
   notes?: string;
 }
+
+// ─── Portfolio Health & Risk Center ──────────────────────────────────────────
+
+export type InsightType = 'WARNING' | 'INFO' | 'SUCCESS' | 'TIP';
+
+export interface Insight {
+  type: InsightType;
+  category: string;
+  title: string;
+  message: string;
+}
+
+export interface SectorExposure {
+  sector: string;
+  value: number;
+  percentage: number;
+  warning: boolean;
+  color: string;
+}
+
+export interface RiskMetrics {
+  diversificationScore: number;
+  diversificationRating: string;
+
+  largestPositionSymbol: string;
+  largestPositionPercent: number;
+  largestPositionRisk: string;
+
+  dominantSector: string;
+  dominantSectorPercent: number;
+  sectorConcentrationWarning: boolean;
+  sectorExposures: SectorExposure[];
+
+  volatilityPercent: number;
+  volatilityRating: string;
+
+  sharpeRatio: number;
+  sharpeRating: string;
+
+  healthScore: number;
+  healthRating: string;
+  healthExplanation: string;
+
+  insights: Insight[];
+}
+
+// ─── Smart stock search ──────────────────────────────────────────────────────
+
+export interface StockSuggestion {
+  symbol: string;
+  companyName: string;
+  sector: string | null;
+  exchange: string | null;
+  type: string; // Stock / ETF
+}

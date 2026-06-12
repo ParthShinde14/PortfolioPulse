@@ -27,23 +27,24 @@ portfoliopulse/
 │       ├── java/com/portfoliopulse/
 │       │   ├── PortfolioPulseApplication.java
 │       │   ├── config/          # CORS, Jackson
-│       │   ├── controller/      # REST controllers
-│       │   ├── dto/             # Request / response DTOs
+│       │   ├── controller/      # REST controllers (+ StockSearchController)
+│       │   ├── dto/             # Request / response DTOs (+ RiskMetrics, SectorExposure, Insight, StockSuggestion)
 │       │   ├── entity/          # JPA entities
 │       │   ├── exception/       # Custom exceptions + global handler
 │       │   ├── repository/      # Spring Data JPA repos
-│       │   └── service/         # Business logic
+│       │   └── service/         # Business logic (+ PortfolioRiskService, StockSearchService)
 │       └── resources/
 │           ├── application.properties
-│           └── schema.sql
+│           ├── schema.sql
+│           └── seed-demo-data.sql   # optional realistic demo data
 └── frontend/
     ├── src/
     │   ├── api/           # Axios API client
     │   ├── components/
-    │   │   ├── charts/    # GrowthChart, AllocationChart, PerformanceChart
+    │   │   ├── charts/    # GrowthChart, AllocationChart, PerformanceChart, SectorExposureChart
     │   │   ├── layout/    # Sidebar, Header, AppLayout
-    │   │   └── ui/        # StatCard, TradeModal, EmptyState, Skeleton
-    │   ├── pages/         # Dashboard, Holdings, Transactions, Analytics
+    │   │   └── ui/        # StatCard, TradeModal, EmptyState, Skeleton, HealthScoreRing, InsightCard
+    │   ├── pages/         # Dashboard, Holdings, Transactions, Analytics, HealthCenter
     │   ├── types/         # TypeScript interfaces
     │   └── utils/         # Formatting helpers
     ├── tailwind.config.js
@@ -63,7 +64,10 @@ portfoliopulse/
 | POST   | `/api/holdings/sell`    | Record a sell transaction            |
 | GET    | `/api/transactions`     | Full transaction history             |
 | GET    | `/api/analytics`        | Deep analytics, top/worst performers |
+| GET    | `/api/analytics/risk`   | Portfolio Health & Risk Center metrics |
 | GET    | `/api/stocks/{symbol}`  | Live stock quote from Yahoo Finance  |
+| GET    | `/api/stocks/search?q=` | Smart autocomplete (symbol or company name) |
+| GET    | `/api/stocks/supported` | List of all catalog-supported symbols |
 
 ---
 
@@ -134,6 +138,19 @@ Or simply run `schema.sql`:
 mysql -u root -p < backend/src/main/resources/schema.sql
 ```
 
+#### Optional: Load realistic demo data
+
+To populate the app with 15 holdings across 4 sectors, 54 transactions, and
+45 days of portfolio growth history (ideal for screenshots / demos and for
+seeing the Portfolio Health & Risk Center fully populated):
+
+```bash
+mysql -u root -p portfoliopulse < backend/src/main/resources/seed-demo-data.sql
+```
+
+See the comments at the top of `seed-demo-data.sql` for details and
+truncation instructions if re-running on a non-empty database.
+
 ### 2 — Backend Configuration
 
 Edit `backend/src/main/resources/application.properties`:
@@ -189,13 +206,26 @@ Frontend starts on **http://localhost:5173**
 
 ### Analytics
 - Best & worst performer cards
+- Risk & Health overview cards (diversification, volatility, Sharpe ratio, health score)
 - Return-by-stock bar chart
 - Portfolio growth line chart
 - Asset & sector allocation donut charts
 - Full holdings breakdown table with weight progress bars
 
+### Portfolio Health & Risk Center (`/health`)
+- **Diversification Score** — 0-100, based on the Herfindahl-Hirschman Index (HHI) of position weights, rated Excellent / Good / Moderate / Poor
+- **Largest Position Risk** — largest holding symbol, % of portfolio, and risk level (Low / Medium / High / Very High)
+- **Sector Exposure** — horizontal bar chart + table of sector allocation %, with a 40% concentration warning threshold
+- **Portfolio Volatility** — annualised volatility (%) derived from daily portfolio snapshot returns, rated Low / Medium / High
+- **Sharpe Ratio** — simplified risk-adjusted return vs. a 5% risk-free rate, rated Excellent / Good / Average / Poor
+- **Portfolio Health Score** — composite 0-100 score (diversification 30%, volatility 25%, Sharpe 25%, position risk 10%, sector concentration 10%) shown as a progress ring with rating and explanation
+- **AI Portfolio Insights** — rule-based engine (no external AI APIs) generating 5-10 dynamic insights: concentration warnings, sector exposure observations, top/worst performer callouts, volatility & Sharpe commentary, and diversification tips
+
+A condensed "Portfolio Health Snapshot" card also appears on the main Dashboard with a link to the full center.
+
 ### Trade Modal
 - Live symbol lookup (Yahoo Finance)
+- **Smart search / autocomplete** — type a symbol or company name (e.g. "Micr" → MSFT - Microsoft Corporation) and pick from a dropdown, with keyboard navigation (↑ ↓ Enter Esc)
 - Shows current price & day change
 - Auto-populates price field
 - Calculates total cost / proceeds

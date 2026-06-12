@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Search, TrendingUp, TrendingDown } from 'lucide-react';
-import { getStockInfo, buyStock, sellStock } from '../../api/client';
-import type { StockInfo, TransactionRequest } from '../../types';
+import { getStockInfo, buyStock, sellStock, searchStocks } from '../../api/client';
+import type { StockInfo, TransactionRequest, StockSuggestion } from '../../types';
 import { fmt, today } from '../../utils/format';
 
 interface Props {
@@ -23,12 +23,60 @@ export default function TradeModal({ mode, prefillSymbol, onClose, onSuccess }: 
   const [submitting, setSub]      = useState(false);
   const [error, setError]         = useState('');
 
+  // Smart search / autocomplete state
+  const [suggestions, setSuggestions] = useState<StockSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightIdx, setHighlightIdx] = useState(-1);
+  const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const skipNextSearch = useRef(false);
+
   useEffect(() => {
     if (prefillSymbol) lookupSymbol(prefillSymbol);
   }, [prefillSymbol]);
 
+  // Debounced autocomplete search by symbol or company name
+  useEffect(() => {
+    if (skipNextSearch.current) {
+      skipNextSearch.current = false;
+      return;
+    }
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+
+    const query = symbol.trim();
+    if (query.length < 1) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    searchDebounce.current = setTimeout(async () => {
+      try {
+        const results = await searchStocks(query, 8);
+        setSuggestions(results);
+        setShowSuggestions(results.length > 0);
+        setHighlightIdx(-1);
+      } catch {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 200);
+
+    return () => {
+      if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    };
+  }, [symbol]);
+
+  const selectSuggestion = (s: StockSuggestion) => {
+    skipNextSearch.current = true;
+    setSymbol(s.symbol);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    lookupSymbol(s.symbol);
+  };
+
   const lookupSymbol = async (sym: string) => {
     if (!sym.trim()) return;
+    setShowSuggestions(false);
     setLL(true); setLE(''); setStockInfo(null);
     try {
       const info = await getStockInfo(sym.trim().toUpperCase());
@@ -93,15 +141,40 @@ export default function TradeModal({ mode, prefillSymbol, onClose, onSuccess }: 
         {/* Body */}
         <div className="px-6 py-5 space-y-4">
           {/* Symbol lookup */}
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1.5">Stock Symbol</label>
+          <div className="relative">
+            <label className="block text-xs font-medium text-slate-600 mb-1.5">Stock Symbol or Company</label>
             <div className="flex gap-2">
               <input
                 className="input-field uppercase font-mono"
-                placeholder="e.g. AAPL, TSLA, MSFT"
+                placeholder="e.g. AAPL, Microsoft, RELIANCE.NS"
                 value={symbol}
                 onChange={e => setSymbol(e.target.value.toUpperCase())}
-                onKeyDown={e => e.key === 'Enter' && lookupSymbol(symbol)}
+                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 120)}
+                onKeyDown={e => {
+                  if (showSuggestions && suggestions.length > 0) {
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setHighlightIdx(i => Math.min(i + 1, suggestions.length - 1));
+                      return;
+                    }
+                    if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setHighlightIdx(i => Math.max(i - 1, 0));
+                      return;
+                    }
+                    if (e.key === 'Enter' && highlightIdx >= 0) {
+                      e.preventDefault();
+                      selectSuggestion(suggestions[highlightIdx]);
+                      return;
+                    }
+                    if (e.key === 'Escape') {
+                      setShowSuggestions(false);
+                      return;
+                    }
+                  }
+                  if (e.key === 'Enter') lookupSymbol(symbol);
+                }}
               />
               <button
                 onClick={() => lookupSymbol(symbol)}
@@ -113,6 +186,30 @@ export default function TradeModal({ mode, prefillSymbol, onClose, onSuccess }: 
               </button>
             </div>
             {lookupError && <p className="text-xs text-red-500 mt-1">{lookupError}</p>}
+
+            {/* Autocomplete dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <ul className="absolute z-10 left-0 right-0 mt-1 bg-white border border-surface-200 rounded-lg shadow-lg max-h-64 overflow-auto">
+                {suggestions.map((s, i) => (
+                  <li
+                    key={s.symbol}
+                    onMouseDown={() => selectSuggestion(s)}
+                    onMouseEnter={() => setHighlightIdx(i)}
+                    className={`flex items-center justify-between px-3 py-2 cursor-pointer transition-colors ${
+                      i === highlightIdx ? 'bg-brand-50' : 'hover:bg-surface-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-mono text-xs font-semibold text-slate-800 shrink-0">{s.symbol}</span>
+                      <span className="text-xs text-slate-500 truncate">{s.companyName}</span>
+                    </div>
+                    <span className="text-[10px] uppercase tracking-wide text-slate-400 shrink-0 ml-2">
+                      {s.type}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Stock info chip */}

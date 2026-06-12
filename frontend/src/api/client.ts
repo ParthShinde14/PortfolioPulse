@@ -1,7 +1,8 @@
 import axios, { AxiosError } from 'axios';
 import type {
   Dashboard, Analytics, Holding, Transaction,
-  StockInfo, TransactionRequest, ApiError
+  StockInfo, TransactionRequest, ApiError,
+  RiskMetrics, StockSuggestion
 } from '../types';
 
 const api = axios.create({
@@ -47,5 +48,13 @@ export const getAnalytics = () =>
 // ─── Stock lookup ─────────────────────────────────────────────────────────────
 export const getStockInfo = (symbol: string) =>
   api.get<StockInfo>(`/stocks/${symbol}`).then((r) => r.data);
+
+// ─── Portfolio Health & Risk Center ──────────────────────────────────────────
+export const getRiskMetrics = () =>
+  api.get<RiskMetrics>('/analytics/risk').then((r) => r.data);
+
+// ─── Smart stock search (autocomplete) ───────────────────────────────────────
+export const searchStocks = (query: string, limit = 8) =>
+  api.get<StockSuggestion[]>('/stocks/search', { params: { q: query, limit } }).then((r) => r.data);
 
 export default api;

@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, ArrowLeftRight,
-  BarChart3, TrendingUp
+  BarChart3, TrendingUp, Shield
 } from 'lucide-react';
 
 const NAV = [
@@ -9,6 +9,7 @@ const NAV = [
   { to: '/holdings',     icon: Briefcase,       label: 'Holdings'     },
   { to: '/transactions', icon: ArrowLeftRight,  label: 'Transactions' },
   { to: '/analytics',    icon: BarChart3,       label: 'Analytics'    },
+  { to: '/health',       icon: Shield,          label: 'Health & Risk'},
 ];
 
 export default function Sidebar() {

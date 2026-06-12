@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Award, AlertTriangle, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
-import { getAnalytics, getHoldings } from '../api/client';
-import type { Analytics, Holding } from '../types';
+import { Link } from 'react-router-dom';
+import {
+  Award, AlertTriangle, TrendingUp, TrendingDown, BarChart3,
+  PieChart as PieIcon, Activity, Gauge, ArrowRight, Minus
+} from 'lucide-react';
+import { getAnalytics, getHoldings, getRiskMetrics } from '../api/client';
+import type { Analytics, Holding, RiskMetrics } from '../types';
 import Header from '../components/layout/Header';
 import { CardSkeleton, ChartSkeleton } from '../components/ui/Skeleton';
 import GrowthChart from '../components/charts/GrowthChart';
@@ -57,18 +61,55 @@ function PerformerCard({
   );
 }
 
+function RiskMetricCard({
+  icon: Icon, iconColor, label, value, sub, rating, ratingColor
+}: {
+  icon: typeof Award; iconColor: string; label: string;
+  value: string; sub: string; rating: string; ratingColor: string;
+}) {
+  return (
+    <div className="stat-card">
+      <div className="flex items-start justify-between mb-2">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconColor}`}>
+          <Icon size={18} strokeWidth={2} />
+        </div>
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${ratingColor}`}>{rating}</span>
+      </div>
+      <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">{label}</p>
+      <p className="text-2xl font-semibold text-slate-800 tracking-tight">{value}</p>
+      <p className="text-xs text-slate-400 mt-1">{sub}</p>
+    </div>
+  );
+}
+
+const RATING_COLOR: Record<string, string> = {
+  Excellent: 'text-emerald-600 bg-emerald-50',
+  Good:      'text-blue-600 bg-blue-50',
+  Moderate:  'text-amber-600 bg-amber-50',
+  Average:   'text-amber-600 bg-amber-50',
+  Fair:      'text-amber-600 bg-amber-50',
+  Poor:      'text-red-600 bg-red-50',
+  Low:       'text-emerald-600 bg-emerald-50',
+  Medium:    'text-amber-600 bg-amber-50',
+  High:      'text-red-600 bg-red-50',
+  'Very High': 'text-red-700 bg-red-100',
+  'N/A':     'text-slate-400 bg-surface-100',
+};
+
 export default function AnalyticsPage() {
   const [data, setData]         = useState<Analytics | null>(null);
   const [holdings, setHoldings] = useState<Holding[]>([]);
+  const [risk, setRisk]         = useState<RiskMetrics | null>(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState('');
 
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const [a, h] = await Promise.all([getAnalytics(), getHoldings()]);
+      const [a, h, r] = await Promise.all([getAnalytics(), getHoldings(), getRiskMetrics()]);
       setData(a);
       setHoldings(h);
+      setRisk(r);
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -102,6 +143,71 @@ export default function AnalyticsPage() {
               <PerformerCard holding={d?.worstPerformer ?? null} type="worst" />
             </>
           )}
+        </div>
+
+        {/* Risk & Health Overview */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <p className="section-title mb-0">Risk &amp; Health Overview</p>
+            <Link
+              to="/health"
+              className="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center gap-1 transition-colors"
+            >
+              Full Health &amp; Risk Center <ArrowRight size={12} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)
+            ) : !risk || risk.diversificationRating === 'N/A' ? (
+              <div className="xl:col-span-4 bg-white rounded-xl border border-surface-200 shadow-card">
+                <EmptyState description="Add holdings to see diversification, volatility, and Sharpe ratio." />
+              </div>
+            ) : (
+              <>
+                <RiskMetricCard
+                  icon={PieIcon}
+                  iconColor="bg-blue-50 text-blue-600"
+                  label="Diversification Score"
+                  value={`${risk.diversificationScore.toFixed(0)} / 100`}
+                  sub="Based on HHI"
+                  rating={risk.diversificationRating}
+                  ratingColor={RATING_COLOR[risk.diversificationRating] ?? RATING_COLOR['N/A']}
+                />
+                <RiskMetricCard
+                  icon={Activity}
+                  iconColor="bg-violet-50 text-violet-600"
+                  label="Portfolio Volatility"
+                  value={`${risk.volatilityPercent.toFixed(1)}%`}
+                  sub="Annualised"
+                  rating={risk.volatilityRating}
+                  ratingColor={RATING_COLOR[risk.volatilityRating] ?? RATING_COLOR['N/A']}
+                />
+                <RiskMetricCard
+                  icon={risk.sharpeRatio > 0 ? TrendingUp : risk.sharpeRatio < 0 ? TrendingDown : Minus}
+                  iconColor={
+                    risk.sharpeRatio >= 1 ? 'bg-emerald-50 text-emerald-600'
+                    : risk.sharpeRatio >= 0 ? 'bg-amber-50 text-amber-600'
+                    : 'bg-red-50 text-red-600'
+                  }
+                  label="Sharpe Ratio"
+                  value={risk.sharpeRatio.toFixed(2)}
+                  sub="Risk-adjusted return"
+                  rating={risk.sharpeRating}
+                  ratingColor={RATING_COLOR[risk.sharpeRating] ?? RATING_COLOR['N/A']}
+                />
+                <RiskMetricCard
+                  icon={Gauge}
+                  iconColor={risk.healthScore >= 55 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}
+                  label="Portfolio Health Score"
+                  value={`${risk.healthScore.toFixed(0)} / 100`}
+                  sub="Composite of all risk factors"
+                  rating={risk.healthRating}
+                  ratingColor={RATING_COLOR[risk.healthRating] ?? RATING_COLOR['N/A']}
+                />
+              </>
+            )}
+          </div>
         </div>
 
         {/* Portfolio metrics */}
