@@ -5,13 +5,16 @@ A full-stack stock portfolio analytics platform that tracks investments, analyze
 ## Screenshots
 
 <p align="center">
-  <img src="images/login.png" alt="Login Page" width="45%">
-  <img src="images/dashboard.png" alt="Dashboard" width="45%">
+  <img src="images/login.png" width="65%">
 </p>
 
 <p align="center">
-  <img src="images/analytics.png" alt="Analytics" width="45%">
-  <img src="images/taxloss.png" alt="Tax Loss Harvesting" width="45%">
+  <img src="images/dashboard.png" width="45%">
+  <img src="images/analytics.png" width="45%">
+</p>
+
+<p align="center">
+  <img src="images/taxloss.png" width="65%">
 </p>
 ---
 
