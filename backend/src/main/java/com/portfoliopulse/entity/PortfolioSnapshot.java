@@ -12,7 +12,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "portfolio_snapshots")
+@Table(name = "portfolio_snapshots", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_snapshot_user_date", columnNames = {"user_id", "snapshot_date"})
+})
 @Data
 @Builder
 @NoArgsConstructor
@@ -22,6 +24,9 @@ public class PortfolioSnapshot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "portfolio_value", nullable = false, precision = 20, scale = 4)
     private BigDecimal portfolioValue;
@@ -35,7 +40,7 @@ public class PortfolioSnapshot {
     @Column(name = "profit_percentage", precision = 10, scale = 4)
     private BigDecimal profitPercentage;
 
-    @Column(name = "snapshot_date", nullable = false, unique = true)
+    @Column(name = "snapshot_date", nullable = false)
     private LocalDate snapshotDate;
 
     @CreationTimestamp

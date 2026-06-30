@@ -1,0 +1,281 @@
+AAPL|Apple Inc.|Technology|Consumer Electronics|NASDAQ|3400.00
+MSFT|Microsoft Corporation|Technology|Software - Infrastructure|NASDAQ|3100.00
+NVDA|NVIDIA Corporation|Technology|Semiconductors|NASDAQ|3000.00
+AVGO|Broadcom Inc.|Technology|Semiconductors|NASDAQ|800.00
+ORCL|Oracle Corporation|Technology|Software - Infrastructure|NYSE|450.00
+CRM|Salesforce, Inc.|Technology|Software - Application|NYSE|300.00
+ADBE|Adobe Inc.|Technology|Software - Application|NASDAQ|250.00
+AMD|Advanced Micro Devices, Inc.|Technology|Semiconductors|NASDAQ|230.00
+CSCO|Cisco Systems, Inc.|Technology|Communication Equipment|NASDAQ|230.00
+ACN|Accenture plc|Technology|Information Technology Services|NYSE|200.00
+IBM|International Business Machines Corporation|Technology|Information Technology Services|NYSE|190.00
+INTC|Intel Corporation|Technology|Semiconductors|NASDAQ|180.00
+TXN|Texas Instruments Incorporated|Technology|Semiconductors|NASDAQ|170.00
+QCOM|QUALCOMM Incorporated|Technology|Semiconductors|NASDAQ|165.00
+NOW|ServiceNow, Inc.|Technology|Software - Application|NYSE|160.00
+INTU|Intuit Inc.|Technology|Software - Application|NASDAQ|160.00
+AMAT|Applied Materials, Inc.|Technology|Semiconductor Equipment & Materials|NASDAQ|140.00
+ADI|Analog Devices, Inc.|Technology|Semiconductors|NASDAQ|100.00
+LRCX|Lam Research Corporation|Technology|Semiconductor Equipment & Materials|NASDAQ|110.00
+MU|Micron Technology, Inc.|Technology|Semiconductors|NASDAQ|120.00
+PANW|Palo Alto Networks, Inc.|Technology|Software - Infrastructure|NASDAQ|110.00
+KLAC|KLA Corporation|Technology|Semiconductor Equipment & Materials|NASDAQ|100.00
+SNPS|Synopsys, Inc.|Technology|Software - Application|NASDAQ|80.00
+CDNS|Cadence Design Systems, Inc.|Technology|Software - Application|NASDAQ|85.00
+ADSK|Autodesk, Inc.|Technology|Software - Application|NASDAQ|55.00
+ROP|Roper Technologies, Inc.|Technology|Software - Application|NASDAQ|60.00
+FTNT|Fortinet, Inc.|Technology|Software - Infrastructure|NASDAQ|70.00
+MSI|Motorola Solutions, Inc.|Technology|Communication Equipment|NYSE|65.00
+APH|Amphenol Corporation|Technology|Electronic Components|NYSE|100.00
+HPQ|HP Inc.|Technology|Computer Hardware|NYSE|35.00
+DELL|Dell Technologies Inc.|Technology|Computer Hardware|NYSE|80.00
+NXPI|NXP Semiconductors N.V.|Technology|Semiconductors|NASDAQ|55.00
+MCHP|Microchip Technology Incorporated|Technology|Semiconductors|NASDAQ|35.00
+WDAY|Workday, Inc.|Technology|Software - Application|NASDAQ|65.00
+PLTR|Palantir Technologies Inc.|Technology|Software - Infrastructure|NASDAQ|250.00
+UBER|Uber Technologies, Inc.|Technology|Software - Application|NYSE|150.00
+SHOP|Shopify Inc.|Technology|Software - Application|NYSE|120.00
+TEAM|Atlassian Corporation|Technology|Software - Application|NASDAQ|50.00
+DDOG|Datadog, Inc.|Technology|Software - Application|NASDAQ|40.00
+ZS|Zscaler, Inc.|Technology|Software - Infrastructure|NASDAQ|30.00
+CRWD|CrowdStrike Holdings, Inc.|Technology|Software - Infrastructure|NASDAQ|90.00
+PYPL|PayPal Holdings, Inc.|Technology|Software - Infrastructure|NASDAQ|70.00
+SQ|Block, Inc.|Technology|Software - Infrastructure|NYSE|45.00
+MRVL|Marvell Technology, Inc.|Technology|Semiconductors|NASDAQ|65.00
+ON|ON Semiconductor Corporation|Technology|Semiconductors|NASDAQ|25.00
+GLW|Corning Incorporated|Technology|Electronic Components|NYSE|40.00
+KEYS|Keysight Technologies, Inc.|Technology|Scientific & Technical Instruments|NYSE|30.00
+ANSS|ANSYS, Inc.|Technology|Software - Application|NASDAQ|35.00
+FICO|Fair Isaac Corporation|Technology|Software - Application|NYSE|45.00
+GEN|Gen Digital Inc.|Technology|Software - Infrastructure|NASDAQ|18.00
+CTSH|Cognizant Technology Solutions Corporation|Technology|Information Technology Services|NASDAQ|38.00
+GOOGL|Alphabet Inc. Class A|Communication Services|Internet Content & Information|NASDAQ|2200.00
+GOOG|Alphabet Inc. Class C|Communication Services|Internet Content & Information|NASDAQ|2200.00
+META|Meta Platforms, Inc.|Communication Services|Internet Content & Information|NASDAQ|1500.00
+NFLX|Netflix, Inc.|Communication Services|Entertainment|NASDAQ|350.00
+DIS|The Walt Disney Company|Communication Services|Entertainment|NYSE|200.00
+CMCSA|Comcast Corporation|Communication Services|Telecom Services|NASDAQ|150.00
+T|AT&T Inc.|Communication Services|Telecom Services|NYSE|170.00
+VZ|Verizon Communications Inc.|Communication Services|Telecom Services|NYSE|180.00
+TMUS|T-Mobile US, Inc.|Communication Services|Telecom Services|NASDAQ|230.00
+EA|Electronic Arts Inc.|Communication Services|Electronic Gaming & Multimedia|NASDAQ|40.00
+TTWO|Take-Two Interactive Software, Inc.|Communication Services|Electronic Gaming & Multimedia|NASDAQ|30.00
+WBD|Warner Bros. Discovery, Inc.|Communication Services|Entertainment|NASDAQ|25.00
+CHTR|Charter Communications, Inc.|Communication Services|Telecom Services|NASDAQ|45.00
+MTCH|Match Group, Inc.|Communication Services|Internet Content & Information|NASDAQ|8.00
+PINS|Pinterest, Inc.|Communication Services|Internet Content & Information|NYSE|22.00
+SNAP|Snap Inc.|Communication Services|Internet Content & Information|NYSE|15.00
+SPOT|Spotify Technology S.A.|Communication Services|Internet Content & Information|NYSE|100.00
+ROKU|Roku, Inc.|Communication Services|Entertainment|NASDAQ|8.00
+LYV|Live Nation Entertainment, Inc.|Communication Services|Entertainment|NYSE|28.00
+AMZN|Amazon.com, Inc.|Consumer Cyclical|Internet Retail|NASDAQ|2000.00
+TSLA|Tesla, Inc.|Consumer Cyclical|Auto Manufacturers|NASDAQ|1000.00
+HD|The Home Depot, Inc.|Consumer Cyclical|Home Improvement Retail|NYSE|400.00
+MCD|McDonald's Corporation|Consumer Cyclical|Restaurants|NYSE|220.00
+BKNG|Booking Holdings Inc.|Consumer Cyclical|Travel Services|NASDAQ|160.00
+TJX|The TJX Companies, Inc.|Consumer Cyclical|Apparel Retail|NYSE|140.00
+NKE|NIKE, Inc.|Consumer Cyclical|Footwear & Accessories|NYSE|100.00
+LOW|Lowe's Companies, Inc.|Consumer Cyclical|Home Improvement Retail|NYSE|150.00
+SBUX|Starbucks Corporation|Consumer Cyclical|Restaurants|NASDAQ|110.00
+ABNB|Airbnb, Inc.|Consumer Cyclical|Travel Services|NASDAQ|80.00
+CMG|Chipotle Mexican Grill, Inc.|Consumer Cyclical|Restaurants|NYSE|80.00
+MAR|Marriott International, Inc.|Consumer Cyclical|Lodging|NASDAQ|75.00
+GM|General Motors Company|Consumer Cyclical|Auto Manufacturers|NYSE|55.00
+F|Ford Motor Company|Consumer Cyclical|Auto Manufacturers|NYSE|45.00
+ORLY|O'Reilly Automotive, Inc.|Consumer Cyclical|Specialty Retail|NASDAQ|75.00
+AZO|AutoZone, Inc.|Consumer Cyclical|Specialty Retail|NYSE|60.00
+ROST|Ross Stores, Inc.|Consumer Cyclical|Apparel Retail|NASDAQ|50.00
+YUM|Yum! Brands, Inc.|Consumer Cyclical|Restaurants|NYSE|38.00
+HLT|Hilton Worldwide Holdings Inc.|Consumer Cyclical|Lodging|NYSE|60.00
+EXPE|Expedia Group, Inc.|Consumer Cyclical|Travel Services|NASDAQ|22.00
+DPZ|Domino's Pizza, Inc.|Consumer Cyclical|Restaurants|NYSE|16.00
+DHI|D.R. Horton, Inc.|Consumer Cyclical|Residential Construction|NYSE|45.00
+LEN|Lennar Corporation|Consumer Cyclical|Residential Construction|NYSE|35.00
+RCL|Royal Caribbean Cruises Ltd.|Consumer Cyclical|Travel Services|NYSE|60.00
+CCL|Carnival Corporation & plc|Consumer Cyclical|Travel Services|NYSE|35.00
+BRK.B|Berkshire Hathaway Inc.|Financial Services|Insurance - Diversified|NYSE|950.00
+JPM|JPMorgan Chase & Co.|Financial Services|Banks - Diversified|NYSE|700.00
+V|Visa Inc.|Financial Services|Credit Services|NYSE|550.00
+MA|Mastercard Incorporated|Financial Services|Credit Services|NYSE|450.00
+BAC|Bank of America Corporation|Financial Services|Banks - Diversified|NYSE|320.00
+WFC|Wells Fargo & Company|Financial Services|Banks - Diversified|NYSE|230.00
+GS|The Goldman Sachs Group, Inc.|Financial Services|Capital Markets|NYSE|180.00
+MS|Morgan Stanley|Financial Services|Capital Markets|NYSE|170.00
+SCHW|The Charles Schwab Corporation|Financial Services|Capital Markets|NYSE|140.00
+AXP|American Express Company|Financial Services|Credit Services|NYSE|200.00
+BLK|BlackRock, Inc.|Financial Services|Asset Management|NYSE|150.00
+C|Citigroup Inc.|Financial Services|Banks - Diversified|NYSE|140.00
+SPGI|S&P Global Inc.|Financial Services|Financial Data & Stock Exchanges|NYSE|150.00
+PGR|The Progressive Corporation|Financial Services|Insurance - Property & Casualty|NYSE|150.00
+CB|Chubb Limited|Financial Services|Insurance - Property & Casualty|NYSE|110.00
+PNC|The PNC Financial Services Group, Inc.|Financial Services|Banks - Regional|NYSE|75.00
+USB|U.S. Bancorp|Financial Services|Banks - Regional|NYSE|75.00
+TFC|Truist Financial Corporation|Financial Services|Banks - Regional|NYSE|55.00
+ICE|Intercontinental Exchange, Inc.|Financial Services|Financial Data & Stock Exchanges|NYSE|95.00
+CME|CME Group Inc.|Financial Services|Financial Data & Stock Exchanges|NASDAQ|85.00
+MMC|Marsh & McLennan Companies, Inc.|Financial Services|Insurance Brokers|NYSE|110.00
+AON|Aon plc|Financial Services|Insurance Brokers|NYSE|75.00
+AIG|American International Group, Inc.|Financial Services|Insurance - Diversified|NYSE|50.00
+MET|MetLife, Inc.|Financial Services|Insurance - Life|NYSE|55.00
+PRU|Prudential Financial, Inc.|Financial Services|Insurance - Life|NYSE|40.00
+COF|Capital One Financial Corporation|Financial Services|Credit Services|NYSE|70.00
+FI|Fiserv, Inc.|Financial Services|Information Technology Services|NYSE|90.00
+LLY|Eli Lilly and Company|Healthcare|Drug Manufacturers - General|NYSE|750.00
+UNH|UnitedHealth Group Incorporated|Healthcare|Healthcare Plans|NYSE|450.00
+JNJ|Johnson & Johnson|Healthcare|Drug Manufacturers - General|NYSE|380.00
+ABBV|AbbVie Inc.|Healthcare|Drug Manufacturers - General|NYSE|340.00
+MRK|Merck & Co., Inc.|Healthcare|Drug Manufacturers - General|NYSE|260.00
+ABT|Abbott Laboratories|Healthcare|Medical Devices|NYSE|200.00
+TMO|Thermo Fisher Scientific Inc.|Healthcare|Diagnostics & Research|NYSE|190.00
+PFE|Pfizer Inc.|Healthcare|Drug Manufacturers - General|NYSE|160.00
+DHR|Danaher Corporation|Healthcare|Diagnostics & Research|NYSE|170.00
+ISRG|Intuitive Surgical, Inc.|Healthcare|Medical Instruments & Supplies|NASDAQ|190.00
+AMGN|Amgen Inc.|Healthcare|Drug Manufacturers - General|NASDAQ|160.00
+SYK|Stryker Corporation|Healthcare|Medical Devices|NYSE|150.00
+BSX|Boston Scientific Corporation|Healthcare|Medical Devices|NYSE|130.00
+MDT|Medtronic plc|Healthcare|Medical Devices|NYSE|110.00
+VRTX|Vertex Pharmaceuticals Incorporated|Healthcare|Biotechnology|NASDAQ|120.00
+GILD|Gilead Sciences, Inc.|Healthcare|Drug Manufacturers - General|NASDAQ|100.00
+REGN|Regeneron Pharmaceuticals, Inc.|Healthcare|Biotechnology|NASDAQ|90.00
+CI|The Cigna Group|Healthcare|Healthcare Plans|NYSE|90.00
+ELV|Elevance Health, Inc.|Healthcare|Healthcare Plans|NYSE|90.00
+CVS|CVS Health Corporation|Healthcare|Healthcare Plans|NYSE|75.00
+ZTS|Zoetis Inc.|Healthcare|Drug Manufacturers - Specialty & Generic|NYSE|80.00
+HCA|HCA Healthcare, Inc.|Healthcare|Medical Care Facilities|NYSE|95.00
+BDX|Becton, Dickinson and Company|Healthcare|Medical Instruments & Supplies|NYSE|65.00
+MRNA|Moderna, Inc.|Healthcare|Biotechnology|NASDAQ|30.00
+BIIB|Biogen Inc.|Healthcare|Biotechnology|NASDAQ|18.00
+EW|Edwards Lifesciences Corporation|Healthcare|Medical Devices|NYSE|40.00
+WMT|Walmart Inc.|Consumer Defensive|Discount Stores|NYSE|700.00
+COST|Costco Wholesale Corporation|Consumer Defensive|Discount Stores|NASDAQ|400.00
+PG|The Procter & Gamble Company|Consumer Defensive|Household & Personal Products|NYSE|400.00
+KO|The Coca-Cola Company|Consumer Defensive|Beverages - Non-Alcoholic|NYSE|290.00
+PEP|PepsiCo, Inc.|Consumer Defensive|Beverages - Non-Alcoholic|NASDAQ|220.00
+PM|Philip Morris International Inc.|Consumer Defensive|Tobacco|NYSE|220.00
+MO|Altria Group, Inc.|Consumer Defensive|Tobacco|NYSE|95.00
+MDLZ|Mondelez International, Inc.|Consumer Defensive|Confectioners|NASDAQ|90.00
+CL|Colgate-Palmolive Company|Consumer Defensive|Household & Personal Products|NYSE|80.00
+TGT|Target Corporation|Consumer Defensive|Discount Stores|NYSE|70.00
+KMB|Kimberly-Clark Corporation|Consumer Defensive|Household & Personal Products|NYSE|48.00
+GIS|General Mills, Inc.|Consumer Defensive|Packaged Foods|NYSE|35.00
+KHC|The Kraft Heinz Company|Consumer Defensive|Packaged Foods|NASDAQ|38.00
+STZ|Constellation Brands, Inc.|Consumer Defensive|Beverages - Wineries & Distilleries|NYSE|35.00
+KDP|Keurig Dr Pepper Inc.|Consumer Defensive|Beverages - Non-Alcoholic|NASDAQ|45.00
+SYY|Sysco Corporation|Consumer Defensive|Food Distribution|NYSE|40.00
+KR|The Kroger Co.|Consumer Defensive|Grocery Stores|NYSE|40.00
+DG|Dollar General Corporation|Consumer Defensive|Discount Stores|NYSE|18.00
+EL|The Estée Lauder Companies Inc.|Consumer Defensive|Household & Personal Products|NYSE|25.00
+GE|GE Aerospace|Industrials|Aerospace & Defense|NYSE|220.00
+CAT|Caterpillar Inc.|Industrials|Farm & Heavy Construction Machinery|NYSE|190.00
+RTX|RTX Corporation|Industrials|Aerospace & Defense|NYSE|180.00
+HON|Honeywell International Inc.|Industrials|Conglomerates|NASDAQ|140.00
+UNP|Union Pacific Corporation|Industrials|Railroads|NYSE|150.00
+BA|The Boeing Company|Industrials|Aerospace & Defense|NYSE|110.00
+UPS|United Parcel Service, Inc.|Industrials|Integrated Freight & Logistics|NYSE|110.00
+LMT|Lockheed Martin Corporation|Industrials|Aerospace & Defense|NYSE|110.00
+DE|Deere & Company|Industrials|Farm & Heavy Construction Machinery|NYSE|120.00
+ETN|Eaton Corporation plc|Industrials|Specialty Industrial Machinery|NYSE|130.00
+ADP|Automatic Data Processing, Inc.|Industrials|Staffing & Employment Services|NASDAQ|115.00
+NOC|Northrop Grumman Corporation|Industrials|Aerospace & Defense|NYSE|75.00
+GD|General Dynamics Corporation|Industrials|Aerospace & Defense|NYSE|80.00
+ITW|Illinois Tool Works Inc.|Industrials|Specialty Industrial Machinery|NYSE|75.00
+MMM|3M Company|Industrials|Conglomerates|NYSE|80.00
+CSX|CSX Corporation|Industrials|Railroads|NASDAQ|65.00
+NSC|Norfolk Southern Corporation|Industrials|Railroads|NYSE|60.00
+FDX|FedEx Corporation|Industrials|Integrated Freight & Logistics|NYSE|65.00
+EMR|Emerson Electric Co.|Industrials|Specialty Industrial Machinery|NYSE|70.00
+PH|Parker-Hannifin Corporation|Industrials|Specialty Industrial Machinery|NYSE|90.00
+TT|Trane Technologies plc|Industrials|Building Products & Equipment|NYSE|90.00
+CARR|Carrier Global Corporation|Industrials|Building Products & Equipment|NYSE|60.00
+WM|Waste Management, Inc.|Industrials|Waste Management|NYSE|85.00
+PCAR|PACCAR Inc|Industrials|Farm & Heavy Construction Machinery|NASDAQ|55.00
+URI|United Rentals, Inc.|Industrials|Rental & Leasing Services|NYSE|50.00
+XOM|Exxon Mobil Corporation|Energy|Oil & Gas Integrated|NYSE|480.00
+CVX|Chevron Corporation|Energy|Oil & Gas Integrated|NYSE|270.00
+COP|ConocoPhillips|Energy|Oil & Gas E&P|NYSE|120.00
+SLB|Schlumberger Limited|Energy|Oil & Gas Equipment & Services|NYSE|55.00
+EOG|EOG Resources, Inc.|Energy|Oil & Gas E&P|NYSE|70.00
+MPC|Marathon Petroleum Corporation|Energy|Oil & Gas Refining & Marketing|NYSE|55.00
+PSX|Phillips 66|Energy|Oil & Gas Refining & Marketing|NYSE|50.00
+WMB|The Williams Companies, Inc.|Energy|Oil & Gas Midstream|NYSE|65.00
+OXY|Occidental Petroleum Corporation|Energy|Oil & Gas E&P|NYSE|45.00
+KMI|Kinder Morgan, Inc.|Energy|Oil & Gas Midstream|NYSE|60.00
+VLO|Valero Energy Corporation|Energy|Oil & Gas Refining & Marketing|NYSE|45.00
+NEE|NextEra Energy, Inc.|Utilities|Utilities - Regulated Electric|NYSE|150.00
+SO|The Southern Company|Utilities|Utilities - Regulated Electric|NYSE|95.00
+DUK|Duke Energy Corporation|Utilities|Utilities - Regulated Electric|NYSE|90.00
+CEG|Constellation Energy Corporation|Utilities|Utilities - Renewable|NASDAQ|85.00
+AEP|American Electric Power Company, Inc.|Utilities|Utilities - Regulated Electric|NASDAQ|55.00
+D|Dominion Energy, Inc.|Utilities|Utilities - Regulated Electric|NYSE|50.00
+EXC|Exelon Corporation|Utilities|Utilities - Regulated Electric|NASDAQ|45.00
+PEG|Public Service Enterprise Group Incorporated|Utilities|Utilities - Regulated Electric|NYSE|45.00
+XEL|Xcel Energy Inc.|Utilities|Utilities - Regulated Electric|NASDAQ|38.00
+ED|Consolidated Edison, Inc.|Utilities|Utilities - Regulated Electric|NYSE|35.00
+PLD|Prologis, Inc.|Real Estate|REIT - Industrial|NYSE|100.00
+AMT|American Tower Corporation|Real Estate|REIT - Specialty|NYSE|90.00
+EQIX|Equinix, Inc.|Real Estate|REIT - Specialty|NASDAQ|80.00
+WELL|Welltower Inc.|Real Estate|REIT - Healthcare Facilities|NYSE|85.00
+DLR|Digital Realty Trust, Inc.|Real Estate|REIT - Specialty|NYSE|60.00
+SPG|Simon Property Group, Inc.|Real Estate|REIT - Retail|NYSE|60.00
+O|Realty Income Corporation|Real Estate|REIT - Retail|NYSE|50.00
+PSA|Public Storage|Real Estate|REIT - Industrial|NYSE|55.00
+CCI|Crown Castle Inc.|Real Estate|REIT - Specialty|NYSE|45.00
+VICI|VICI Properties Inc.|Real Estate|REIT - Diversified|NYSE|33.00
+LIN|Linde plc|Basic Materials|Specialty Chemicals|NASDAQ|220.00
+APD|Air Products and Chemicals, Inc.|Basic Materials|Specialty Chemicals|NYSE|65.00
+SHW|The Sherwin-Williams Company|Basic Materials|Specialty Chemicals|NYSE|90.00
+FCX|Freeport-McMoRan Inc.|Basic Materials|Copper|NYSE|60.00
+NEM|Newmont Corporation|Basic Materials|Gold|NYSE|55.00
+ECL|Ecolab Inc.|Basic Materials|Specialty Chemicals|NYSE|75.00
+NUE|Nucor Corporation|Basic Materials|Steel|NYSE|35.00
+DOW|Dow Inc.|Basic Materials|Chemicals|NYSE|28.00
+RELIANCE.NS|Reliance Industries Limited|Energy|Oil & Gas Refining & Marketing|NSE|1500000.00
+TCS.NS|Tata Consultancy Services Limited|Technology|Information Technology Services|NSE|1300000.00
+HDFCBANK.NS|HDFC Bank Limited|Financial Services|Banks - Regional|NSE|1100000.00
+ICICIBANK.NS|ICICI Bank Limited|Financial Services|Banks - Regional|NSE|800000.00
+BHARTIARTL.NS|Bharti Airtel Limited|Communication Services|Telecom Services|NSE|700000.00
+INFY.NS|Infosys Limited|Technology|Information Technology Services|NSE|650000.00
+SBIN.NS|State Bank of India|Financial Services|Banks - Regional|NSE|650000.00
+LICI.NS|Life Insurance Corporation of India|Financial Services|Insurance - Life|NSE|500000.00
+HINDUNILVR.NS|Hindustan Unilever Limited|Consumer Defensive|Household & Personal Products|NSE|550000.00
+ITC.NS|ITC Limited|Consumer Defensive|Tobacco|NSE|530000.00
+LT.NS|Larsen & Toubro Limited|Industrials|Engineering & Construction|NSE|480000.00
+HCLTECH.NS|HCL Technologies Limited|Technology|Information Technology Services|NSE|430000.00
+BAJFINANCE.NS|Bajaj Finance Limited|Financial Services|Credit Services|NSE|430000.00
+MARUTI.NS|Maruti Suzuki India Limited|Consumer Cyclical|Auto Manufacturers|NSE|380000.00
+SUNPHARMA.NS|Sun Pharmaceutical Industries Limited|Healthcare|Drug Manufacturers - Specialty & Generic|NSE|400000.00
+KOTAKBANK.NS|Kotak Mahindra Bank Limited|Financial Services|Banks - Regional|NSE|360000.00
+ONGC.NS|Oil and Natural Gas Corporation Limited|Energy|Oil & Gas E&P|NSE|340000.00
+TATAMOTORS.NS|Tata Motors Limited|Consumer Cyclical|Auto Manufacturers|NSE|330000.00
+NTPC.NS|NTPC Limited|Utilities|Utilities - Regulated Electric|NSE|330000.00
+AXISBANK.NS|Axis Bank Limited|Financial Services|Banks - Regional|NSE|330000.00
+ADANIENT.NS|Adani Enterprises Limited|Industrials|Conglomerates|NSE|320000.00
+M&M.NS|Mahindra & Mahindra Limited|Consumer Cyclical|Auto Manufacturers|NSE|320000.00
+ULTRACEMCO.NS|UltraTech Cement Limited|Basic Materials|Building Materials|NSE|300000.00
+HINDALCO.NS|Hindalco Industries Limited|Basic Materials|Aluminum|NSE|230000.00
+ASIANPAINT.NS|Asian Paints Limited|Basic Materials|Specialty Chemicals|NSE|230000.00
+TITAN.NS|Titan Company Limited|Consumer Cyclical|Luxury Goods|NSE|280000.00
+POWERGRID.NS|Power Grid Corporation of India Limited|Utilities|Utilities - Regulated Electric|NSE|270000.00
+BAJAJFINSV.NS|Bajaj Finserv Limited|Financial Services|Insurance - Diversified|NSE|270000.00
+NESTLEIND.NS|Nestle India Limited|Consumer Defensive|Packaged Foods|NSE|230000.00
+WIPRO.NS|Wipro Limited|Technology|Information Technology Services|NSE|250000.00
+JSWSTEEL.NS|JSW Steel Limited|Basic Materials|Steel|NSE|240000.00
+COALINDIA.NS|Coal India Limited|Energy|Thermal Coal|NSE|250000.00
+TATASTEEL.NS|Tata Steel Limited|Basic Materials|Steel|NSE|200000.00
+GRASIM.NS|Grasim Industries Limited|Basic Materials|Chemicals|NSE|170000.00
+TECHM.NS|Tech Mahindra Limited|Technology|Information Technology Services|NSE|160000.00
+SBILIFE.NS|SBI Life Insurance Company Limited|Financial Services|Insurance - Life|NSE|180000.00
+HDFCLIFE.NS|HDFC Life Insurance Company Limited|Financial Services|Insurance - Life|NSE|150000.00
+DRREDDY.NS|Dr. Reddy's Laboratories Limited|Healthcare|Drug Manufacturers - Specialty & Generic|NSE|120000.00
+CIPLA.NS|Cipla Limited|Healthcare|Drug Manufacturers - Specialty & Generic|NSE|120000.00
+EICHERMOT.NS|Eicher Motors Limited|Consumer Cyclical|Auto Manufacturers|NSE|130000.00
+BAJAJ-AUTO.NS|Bajaj Auto Limited|Consumer Cyclical|Auto Manufacturers|NSE|250000.00
+APOLLOHOSP.NS|Apollo Hospitals Enterprise Limited|Healthcare|Medical Care Facilities|NSE|90000.00
+INDUSINDBK.NS|IndusInd Bank Limited|Financial Services|Banks - Regional|NSE|90000.00
+HEROMOTOCO.NS|Hero MotoCorp Limited|Consumer Cyclical|Auto Manufacturers|NSE|100000.00
+BPCL.NS|Bharat Petroleum Corporation Limited|Energy|Oil & Gas Refining & Marketing|NSE|100000.00
+DIVISLAB.NS|Divi's Laboratories Limited|Healthcare|Drug Manufacturers - Specialty & Generic|NSE|100000.00
+SHRIRAMFIN.NS|Shriram Finance Limited|Financial Services|Credit Services|NSE|100000.00
+TRENT.NS|Trent Limited|Consumer Cyclical|Apparel Retail|NSE|250000.00
+ADANIPORTS.NS|Adani Ports and Special Economic Zone Limited|Industrials|Marine Shipping|NSE|280000.00
+LTIM.NS|LTIMindtree Limited|Technology|Information Technology Services|NSE|170000.00

@@ -4,63 +4,26 @@ import {
   Award, AlertTriangle, TrendingUp, TrendingDown, BarChart3,
   PieChart as PieIcon, Activity, Gauge, ArrowRight, Minus
 } from 'lucide-react';
-import { getAnalytics, getHoldings, getRiskMetrics } from '../api/client';
-import type { Analytics, Holding, RiskMetrics } from '../types';
+import {
+  getAnalytics, getHoldings, getRiskMetrics,
+  getTradeAnalytics, getTaxOpportunities, getTaxSettings, saveTaxSettings
+} from '../api/client';
+import type {
+  Analytics, Holding, RiskMetrics, TradeAnalytics,
+  TaxHarvesting, TaxSettings
+} from '../types';
 import Header from '../components/layout/Header';
 import { CardSkeleton, ChartSkeleton } from '../components/ui/Skeleton';
 import GrowthChart from '../components/charts/GrowthChart';
 import AllocationChart from '../components/charts/AllocationChart';
 import PerformanceChart from '../components/charts/PerformanceChart';
 import EmptyState from '../components/ui/EmptyState';
+import TradeAnalyticsSection from '../components/ui/TradeAnalyticsSection';
+import TaxHarvestingSection from '../components/ui/TaxHarvestingSection';
+import TradeModal from '../components/ui/TradeModal';
 import { fmt, profitClass } from '../utils/format';
 
-function MetricRow({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="flex items-center justify-between py-3 border-b border-surface-100 last:border-0">
-      <span className="text-sm text-slate-500">{label}</span>
-      <div className="text-right">
-        <span className="text-sm font-semibold text-slate-800">{value}</span>
-        {sub && <p className="text-[11px] text-slate-400">{sub}</p>}
-      </div>
-    </div>
-  );
-}
-
-function PerformerCard({
-  holding, type
-}: { holding: Holding | null; type: 'top' | 'worst' }) {
-  if (!holding) return (
-    <div className="stat-card flex items-center justify-center h-28 text-slate-400 text-sm">No data</div>
-  );
-  const isTop = type === 'top';
-  return (
-    <div className={`stat-card border ${isTop ? 'border-emerald-100' : 'border-red-100'}`}>
-      <div className="flex items-start justify-between mb-2">
-        <div className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md ${
-          isTop ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
-        }`}>
-          {isTop ? <Award size={12} /> : <AlertTriangle size={12} />}
-          {isTop ? 'Best Performer' : 'Worst Performer'}
-        </div>
-      </div>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="font-semibold text-slate-800 font-mono text-sm">{holding.symbol}</p>
-          <p className="text-xs text-slate-400 truncate max-w-[140px]">{holding.companyName}</p>
-        </div>
-        <div className="text-right">
-          <p className={`text-lg font-bold ${profitClass(holding.profitLossPercent)}`}>
-            {fmt.percent(holding.profitLossPercent)}
-          </p>
-          <p className={`text-xs font-medium ${profitClass(holding.profitLoss)}`}>
-            {fmt.currency(holding.profitLoss)}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
+// ─── Risk metric card (reused from previous phase) ────────────────────────────
 function RiskMetricCard({
   icon: Icon, iconColor, label, value, sub, rating, ratingColor
 }: {
@@ -73,7 +36,9 @@ function RiskMetricCard({
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconColor}`}>
           <Icon size={18} strokeWidth={2} />
         </div>
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${ratingColor}`}>{rating}</span>
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${ratingColor}`}>
+          {rating}
+        </span>
       </div>
       <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">{label}</p>
       <p className="text-2xl font-semibold text-slate-800 tracking-tight">{value}</p>
@@ -82,34 +47,88 @@ function RiskMetricCard({
   );
 }
 
+// ─── Performer card ────────────────────────────────────────────────────────────
+function PerformerCard({
+  holding, type
+}: {
+  holding: Holding | null;
+  type: 'top' | 'worst';
+}) {
+  if (!holding) {
+    return (
+      <div className="stat-card flex items-center justify-center min-h-[100px]">
+        <p className="text-sm text-slate-400">No data</p>
+      </div>
+    );
+  }
+  const isPositive = holding.profitLossPercent >= 0;
+  return (
+    <div className="stat-card">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+          {type === 'top' ? '🏆 Top Performer' : '📉 Worst Performer'}
+        </p>
+        {isPositive
+          ? <TrendingUp size={16} className="text-emerald-600" />
+          : <TrendingDown size={16} className="text-red-600" />}
+      </div>
+      <p className="font-mono font-bold text-slate-800 text-lg">{holding.symbol}</p>
+      <p className="text-xs text-slate-400 truncate">{holding.companyName}</p>
+      <p className={`text-xl font-bold mt-2 ${profitClass(holding.profitLossPercent)}`}>
+        {fmt.percent(holding.profitLossPercent)}
+      </p>
+      <p className="text-xs text-slate-400">{fmt.currency(holding.profitLoss)} total</p>
+    </div>
+  );
+}
+
 const RATING_COLOR: Record<string, string> = {
-  Excellent: 'text-emerald-600 bg-emerald-50',
-  Good:      'text-blue-600 bg-blue-50',
-  Moderate:  'text-amber-600 bg-amber-50',
-  Average:   'text-amber-600 bg-amber-50',
-  Fair:      'text-amber-600 bg-amber-50',
-  Poor:      'text-red-600 bg-red-50',
-  Low:       'text-emerald-600 bg-emerald-50',
-  Medium:    'text-amber-600 bg-amber-50',
-  High:      'text-red-600 bg-red-50',
+  Excellent:   'text-emerald-600 bg-emerald-50',
+  Good:        'text-blue-600 bg-blue-50',
+  Moderate:    'text-amber-600 bg-amber-50',
+  Average:     'text-amber-600 bg-amber-50',
+  Fair:        'text-amber-600 bg-amber-50',
+  Poor:        'text-red-600 bg-red-50',
+  Low:         'text-emerald-600 bg-emerald-50',
+  Medium:      'text-amber-600 bg-amber-50',
+  High:        'text-red-600 bg-red-50',
   'Very High': 'text-red-700 bg-red-100',
-  'N/A':     'text-slate-400 bg-surface-100',
+  'N/A':       'text-slate-400 bg-surface-100',
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Page
+// ─────────────────────────────────────────────────────────────────────────────
 export default function AnalyticsPage() {
+  // Core analytics
   const [data, setData]         = useState<Analytics | null>(null);
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [risk, setRisk]         = useState<RiskMetrics | null>(null);
+  const [trades, setTrades]     = useState<TradeAnalytics | null>(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState('');
 
+  // Tax harvesting
+  const [taxData, setTaxData]         = useState<TaxHarvesting | null>(null);
+  const [taxSettings, setTaxSettings] = useState<TaxSettings | null>(null);
+  const [taxLoading, setTaxLoading]   = useState(true);
+
+  // Trade modal (for quick Sell/Buy from tax cards)
+  const [tradeModal, setTradeModal] = useState<{
+    mode: 'buy' | 'sell'; symbol: string;
+  } | null>(null);
+
+  // ── Loaders ────────────────────────────────────────────────────────────────
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const [a, h, r] = await Promise.all([getAnalytics(), getHoldings(), getRiskMetrics()]);
+      const [a, h, r, t] = await Promise.all([
+        getAnalytics(), getHoldings(), getRiskMetrics(), getTradeAnalytics(),
+      ]);
       setData(a);
       setHoldings(h);
       setRisk(r);
+      setTrades(t);
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -117,26 +136,101 @@ export default function AnalyticsPage() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  const loadTax = useCallback(async () => {
+    setTaxLoading(true);
+    try {
+      const [td, ts] = await Promise.all([
+        getTaxOpportunities(),
+        getTaxSettings(),
+      ]);
+      setTaxData(td);
+      setTaxSettings(ts);
+    } catch {
+      // non-critical — silently fail
+    } finally {
+      setTaxLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+    loadTax();
+  }, [load, loadTax]);
+
+  // ── Tax settings save ──────────────────────────────────────────────────────
+  const handleSaveTaxSettings = useCallback(async (settings: TaxSettings) => {
+    const saved = await saveTaxSettings(settings);
+    setTaxSettings(saved);
+    // Re-run the analysis with the new settings
+    const updated = await getTaxOpportunities();
+    setTaxData(updated);
+  }, []);
+
+  // ── Trade modal handlers (from tax harvesting cards) ──────────────────────
+  const handleSell = useCallback((symbol: string) => {
+    setTradeModal({ mode: 'sell', symbol });
+  }, []);
+
+  const handleBuy = useCallback((symbol: string) => {
+    setTradeModal({ mode: 'buy', symbol });
+  }, []);
+
+  const handleTradeSuccess = useCallback(() => {
+    load();
+    loadTax();
+  }, [load, loadTax]);
 
   const d = data;
 
   return (
     <div className="flex flex-col flex-1 overflow-auto">
-      <Header title="Analytics" subtitle="Deep portfolio insights" onRefresh={load} loading={loading} />
+      <Header
+        title="Analytics"
+        subtitle="Portfolio performance, risk, and tax insights"
+        onRefresh={() => { load(); loadTax(); }}
+        loading={loading}
+      />
 
       <div className="flex-1 p-6 space-y-6">
+
+        {/* Error banner */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-3 text-sm text-red-700">{error}</div>
+          <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-3 text-sm text-red-700">
+            {error}
+          </div>
         )}
 
-        {/* Performers */}
+        {/* ── KPI row ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+          ) : (
+            <>
+              <div className="stat-card">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Total Invested</p>
+                <p className="text-2xl font-semibold text-slate-800">{fmt.currency(d?.totalInvestment ?? 0)}</p>
+              </div>
+              <div className="stat-card">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Current Value</p>
+                <p className="text-2xl font-semibold text-slate-800">{fmt.currency(d?.currentPortfolioValue ?? 0)}</p>
+              </div>
+              <div className="stat-card">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Total P&L</p>
+                <p className={`text-2xl font-semibold ${profitClass(d?.totalProfitLoss ?? 0)}`}>
+                  {fmt.currency(d?.totalProfitLoss ?? 0)}
+                </p>
+                <p className={`text-sm font-medium ${profitClass(d?.profitLossPercent ?? 0)}`}>
+                  {fmt.percent(d?.profitLossPercent ?? 0)}
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* ── Performers ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {loading ? (
-            <>
-              <CardSkeleton />
-              <CardSkeleton />
-            </>
+            <><CardSkeleton /><CardSkeleton /></>
           ) : (
             <>
               <PerformerCard holding={d?.topPerformer ?? null} type="top" />
@@ -145,13 +239,13 @@ export default function AnalyticsPage() {
           )}
         </div>
 
-        {/* Risk & Health Overview */}
+        {/* ── Risk & Health Overview ── */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <p className="section-title mb-0">Risk &amp; Health Overview</p>
             <Link
               to="/health"
-              className="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center gap-1 transition-colors"
+              className="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center gap-1"
             >
               Full Health &amp; Risk Center <ArrowRight size={12} />
             </Link>
@@ -210,149 +304,166 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Portfolio metrics */}
+        {/* ── Portfolio metrics charts ── */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <div className="bg-white rounded-xl border border-surface-200 shadow-card p-5">
-            <p className="section-title">Portfolio Summary</p>
+          <div className="xl:col-span-2 bg-white rounded-xl border border-surface-200 shadow-card p-5">
+            <p className="section-title">Portfolio Growth</p>
             {loading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-10 bg-surface-100 rounded animate-pulse" />
-                ))}
-              </div>
-            ) : !d ? (
-              <EmptyState />
+              <ChartSkeleton height={240} />
+            ) : !d?.portfolioGrowth?.length ? (
+              <EmptyState description="Buy stocks to start tracking portfolio growth." />
             ) : (
-              <div>
-                <MetricRow label="Total Invested"     value={fmt.currency(d.totalInvestment)} />
-                <MetricRow label="Current Value"      value={fmt.currency(d.currentPortfolioValue)} />
-                <MetricRow
-                  label="Total P&L"
-                  value={fmt.currency(d.totalProfitLoss)}
-                  sub={fmt.percent(d.profitLossPercent)}
-                />
-                <MetricRow label="Stocks Held"        value={String(holdings.length)} />
-                <MetricRow
-                  label="Avg Stock Return"
-                  value={holdings.length
-                    ? fmt.percent(holdings.reduce((s, h) => s + h.profitLossPercent, 0) / holdings.length)
-                    : '—'}
-                />
-              </div>
+              <GrowthChart data={d.portfolioGrowth} />
             )}
           </div>
-
-          {/* Performance bar chart */}
-          <div className="xl:col-span-2 bg-white rounded-xl border border-surface-200 shadow-card p-5">
-            <p className="section-title">Return by Stock</p>
+          <div className="bg-white rounded-xl border border-surface-200 shadow-card p-5">
+            <p className="section-title">Asset Allocation</p>
             {loading ? (
-              <ChartSkeleton height={260} />
+              <ChartSkeleton height={240} />
+            ) : !d?.assetAllocation?.length ? (
+              <EmptyState description="No holdings yet." />
+            ) : (
+              <AllocationChart data={d.assetAllocation} />
+            )}
+          </div>
+        </div>
+
+        {/* ── Sector allocation + performance ── */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className="bg-white rounded-xl border border-surface-200 shadow-card p-5">
+            <p className="section-title">Sector Allocation</p>
+            {loading ? (
+              <ChartSkeleton height={240} />
+            ) : !d?.sectorAllocation?.length ? (
+              <EmptyState description="No sector data yet." />
+            ) : (
+              <AllocationChart data={d.sectorAllocation} />
+            )}
+          </div>
+          <div className="bg-white rounded-xl border border-surface-200 shadow-card p-5">
+            <p className="section-title">Performance by Stock</p>
+            {loading ? (
+              <ChartSkeleton height={240} />
             ) : !holdings.length ? (
-              <EmptyState
-                icon={BarChart3}
-                title="No holdings data"
-                description="Add stocks to see performance breakdown."
-              />
+              <EmptyState description="No holdings yet." />
             ) : (
               <PerformanceChart holdings={holdings} />
             )}
           </div>
         </div>
 
-        {/* Portfolio growth */}
-        <div className="bg-white rounded-xl border border-surface-200 shadow-card p-5">
-          <p className="section-title">Portfolio Growth Over Time</p>
-          {loading
-            ? <ChartSkeleton height={280} />
-            : <GrowthChart data={d?.portfolioGrowth ?? []} />
-          }
-        </div>
-
-        {/* Allocation charts */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl border border-surface-200 shadow-card p-5">
-            <p className="section-title">Asset Allocation</p>
-            {loading
-              ? <ChartSkeleton height={280} />
-              : <AllocationChart data={d?.assetAllocation ?? []} height={280} />
-            }
+        {/* ── Holdings breakdown table ── */}
+        <div className="bg-white rounded-xl border border-surface-200 shadow-card overflow-hidden">
+          <div className="px-5 py-4 border-b border-surface-200">
+            <p className="section-title mb-0">Holdings Breakdown</p>
           </div>
-          <div className="bg-white rounded-xl border border-surface-200 shadow-card p-5">
-            <p className="section-title">Sector Allocation</p>
-            {loading
-              ? <ChartSkeleton height={280} />
-              : <AllocationChart data={d?.sectorAllocation ?? []} height={280} />
-            }
-          </div>
-        </div>
-
-        {/* Holdings breakdown table */}
-        {!loading && holdings.length > 0 && (
-          <div className="bg-white rounded-xl border border-surface-200 shadow-card overflow-hidden">
-            <div className="px-5 py-4 border-b border-surface-200">
-              <p className="section-title mb-0">Holdings Breakdown</p>
+          {loading ? (
+            <div className="p-5 space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-10 bg-surface-100 rounded animate-pulse" />
+              ))}
             </div>
+          ) : !holdings.length ? (
+            <EmptyState description="No holdings to display." />
+          ) : (
             <div className="overflow-x-auto">
-              <table className="data-table w-full min-w-[720px]">
+              <table className="data-table w-full min-w-[640px]">
                 <thead>
                   <tr>
                     <th>Stock</th>
-                    <th>Sector</th>
-                    <th className="text-right">Weight</th>
-                    <th className="text-right">Invested</th>
-                    <th className="text-right">Current Value</th>
+                    <th className="text-right">Qty</th>
+                    <th className="text-right">Avg Buy</th>
+                    <th className="text-right">Current</th>
+                    <th className="text-right">Value</th>
                     <th className="text-right">P&L</th>
                     <th className="text-right">Return</th>
+                    <th>Weight</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[...holdings]
-                    .sort((a, b) => b.currentValue - a.currentValue)
-                    .map(h => {
-                      const totalCv = holdings.reduce((s, x) => s + x.currentValue, 0);
-                      const weight  = totalCv ? (h.currentValue / totalCv * 100).toFixed(1) : '0';
-                      return (
-                        <tr key={h.id}>
-                          <td>
-                            <p className="font-semibold text-slate-800 font-mono text-xs">{h.symbol}</p>
-                            <p className="text-slate-400 text-[11px]">{h.companyName}</p>
-                          </td>
-                          <td>
-                            <span className="text-xs px-2 py-0.5 bg-surface-100 text-slate-500 rounded">
-                              {h.sector ?? 'Unknown'}
-                            </span>
-                          </td>
-                          <td className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <div className="w-16 bg-surface-200 rounded-full h-1.5 overflow-hidden">
-                                <div
-                                  className="h-full bg-brand-500 rounded-full"
-                                  style={{ width: `${weight}%` }}
-                                />
-                              </div>
-                              <span className="text-xs text-slate-600 w-10 text-right">{weight}%</span>
+                  {holdings.map(h => {
+                    const totalValue = holdings.reduce(
+                      (sum, x) => sum + (x.currentValue ?? 0), 0);
+                    const weight = totalValue > 0
+                      ? ((h.currentValue ?? 0) / totalValue * 100).toFixed(1)
+                      : '0.0';
+                    return (
+                      <tr key={h.id}>
+                        <td>
+                          <p className="font-semibold text-slate-800 font-mono text-xs">
+                            {h.symbol}
+                          </p>
+                          <p className="text-slate-400 text-[11px] truncate max-w-[140px]">
+                            {h.companyName}
+                          </p>
+                        </td>
+                        <td className="text-right font-mono text-xs text-slate-700">
+                          {h.quantity.toFixed(2)}
+                        </td>
+                        <td className="text-right font-mono text-xs text-slate-600">
+                          {fmt.currency(h.averageBuyPrice)}
+                        </td>
+                        <td className="text-right font-mono text-xs text-slate-700">
+                          {fmt.currency(h.currentPrice)}
+                        </td>
+                        <td className="text-right font-mono text-xs text-slate-700">
+                          {fmt.currency(h.currentValue)}
+                        </td>
+                        <td className={`text-right font-medium ${profitClass(h.profitLoss)}`}>
+                          {fmt.currency(h.profitLoss)}
+                        </td>
+                        <td className={`text-right font-semibold ${profitClass(h.profitLossPercent)}`}>
+                          {fmt.percent(h.profitLossPercent)}
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-surface-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-brand-500 rounded-full"
+                                style={{ width: `${Math.min(Number(weight), 100)}%` }}
+                              />
                             </div>
-                          </td>
-                          <td className="text-right text-slate-600">{fmt.currency(h.investedValue)}</td>
-                          <td className="text-right font-medium text-slate-800">{fmt.currency(h.currentValue)}</td>
-                          <td className={`text-right font-medium ${profitClass(h.profitLoss)}`}>{fmt.currency(h.profitLoss)}</td>
-                          <td className={`text-right font-semibold ${profitClass(h.profitLossPercent)}`}>
-                            <span className="flex items-center justify-end gap-0.5">
-                              {h.profitLossPercent >= 0
-                                ? <TrendingUp size={11} />
-                                : <TrendingDown size={11} />}
-                              {fmt.percent(h.profitLossPercent)}
+                            <span className="text-[11px] text-slate-400 w-10 text-right">
+                              {weight}%
                             </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* ── Trade Performance Analytics ── */}
+        <div>
+          <p className="section-title">Trade Performance Analytics</p>
+          <TradeAnalyticsSection data={trades} loading={loading} />
+        </div>
+
+        {/* ── Tax Loss Harvesting ── */}
+        <TaxHarvestingSection
+          data={taxData}
+          settings={taxSettings}
+          loading={taxLoading}
+          onSaveSettings={handleSaveTaxSettings}
+          onSell={handleSell}
+          onBuy={handleBuy}
+        />
+
       </div>
+
+      {/* Trade modal triggered from tax harvesting cards */}
+      {tradeModal && (
+        <TradeModal
+          mode={tradeModal.mode}
+          prefillSymbol={tradeModal.symbol}
+          onClose={() => setTradeModal(null)}
+          onSuccess={handleTradeSuccess}
+        />
+      )}
     </div>
   );
 }

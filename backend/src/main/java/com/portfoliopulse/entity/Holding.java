@@ -12,7 +12,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "holdings")
+@Table(name = "holdings", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_holdings_user_symbol", columnNames = {"user_id", "symbol"})
+})
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,7 +25,10 @@ public class Holding {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    @Column(nullable = false, length = 20)
     private String symbol;
 
     @Column(name = "company_name", nullable = false)

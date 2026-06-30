@@ -3,6 +3,7 @@ package com.portfoliopulse.service;
 import com.portfoliopulse.dto.TransactionDto;
 import com.portfoliopulse.entity.Transaction;
 import com.portfoliopulse.repository.TransactionRepository;
+import com.portfoliopulse.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,13 +21,15 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
 
     public List<TransactionDto> getAllTransactions() {
-        return transactionRepository.findAllSortedByDate().stream()
+        Long userId = SecurityUtils.getCurrentUserId();
+        return transactionRepository.findAllSortedByDate(userId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
     public List<TransactionDto> getTransactionsBySymbol(String symbol) {
-        return transactionRepository.findBySymbolOrderByTransactionDateDesc(symbol.toUpperCase()).stream()
+        Long userId = SecurityUtils.getCurrentUserId();
+        return transactionRepository.findByUserIdAndSymbolOrderByTransactionDateDesc(userId, symbol.toUpperCase()).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }

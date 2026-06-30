@@ -44,6 +44,51 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(HoldingConflictException.class)
+    public ResponseEntity<ApiErrorDto> handleHoldingConflict(
+            HoldingConflictException ex, HttpServletRequest request) {
+        log.error("Holding conflict at {}: {}", request.getRequestURI(), ex.getMessage(), ex.getCause());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                buildError(HttpStatus.CONFLICT, "Holding Conflict", ex.getMessage(), request.getRequestURI())
+        );
+    }
+
+    @ExceptionHandler(MarketClosedException.class)
+    public ResponseEntity<ApiErrorDto> handleMarketClosed(
+            MarketClosedException ex, HttpServletRequest request) {
+        log.warn("Market closed trade attempt at {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                buildError(HttpStatus.FORBIDDEN, "Market Closed", ex.getMessage(), request.getRequestURI())
+        );
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDto> handleEmailAlreadyExists(
+            EmailAlreadyExistsException ex, HttpServletRequest request) {
+        log.warn("Email already exists: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                buildError(HttpStatus.CONFLICT, "Email Already Registered", ex.getMessage(), request.getRequestURI())
+        );
+    }
+
+    @ExceptionHandler(DuplicateEntryException.class)
+    public ResponseEntity<ApiErrorDto> handleDuplicateEntry(
+            DuplicateEntryException ex, HttpServletRequest request) {
+        log.warn("Duplicate entry: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                buildError(HttpStatus.CONFLICT, "Duplicate Entry", ex.getMessage(), request.getRequestURI())
+        );
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiErrorDto> handleInvalidCredentials(
+            InvalidCredentialsException ex, HttpServletRequest request) {
+        log.warn("Invalid login attempt at {}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                buildError(HttpStatus.UNAUTHORIZED, "Invalid Credentials", ex.getMessage(), request.getRequestURI())
+        );
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorDto> handleValidationErrors(
             MethodArgumentNotValidException ex, HttpServletRequest request) {

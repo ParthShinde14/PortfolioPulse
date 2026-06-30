@@ -1,14 +1,18 @@
 package com.portfoliopulse.service;
 
 import com.portfoliopulse.dto.*;
+import com.portfoliopulse.dto.TransactionRequestDto.TransactionMode;
 import com.portfoliopulse.entity.Holding;
 import com.portfoliopulse.entity.Transaction;
+import com.portfoliopulse.exception.HoldingConflictException;
 import com.portfoliopulse.exception.InsufficientHoldingsException;
 import com.portfoliopulse.exception.ResourceNotFoundException;
 import com.portfoliopulse.repository.HoldingRepository;
 import com.portfoliopulse.repository.TransactionRepository;
+import com.portfoliopulse.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,31 +30,52 @@ public class HoldingService {
     private final HoldingRepository holdingRepository;
     private final TransactionRepository transactionRepository;
     private final YahooFinanceService yahooFinanceService;
+    private final MarketHoursService marketHoursService;
 
     @Transactional(readOnly = true)
     public List<HoldingDto> getAllHoldings() {
-        return holdingRepository.findAll().stream()
+        Long userId = SecurityUtils.getCurrentUserId();
+        return holdingRepository.findByUserId(userId).stream()
+                .map(this::enrichWithCurrentPrice)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Used by scheduled jobs (e.g. {@code AnalyticsService.scheduledSnapshot})
+     * that run outside an authenticated request context and therefore cannot
+     * use {@link SecurityUtils#getCurrentUserId()}.
+     */
+    @Transactional(readOnly = true)
+    public List<HoldingDto> getAllHoldingsForUser(Long userId) {
+        return holdingRepository.findByUserId(userId).stream()
                 .map(this::enrichWithCurrentPrice)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<HoldingDto> searchHoldings(String query) {
-        return holdingRepository
-                .findBySymbolContainingIgnoreCaseOrCompanyNameContainingIgnoreCase(query, query)
-                .stream()
+        Long userId = SecurityUtils.getCurrentUserId();
+        return holdingRepository.searchByUserId(userId, query).stream()
                 .map(this::enrichWithCurrentPrice)
                 .collect(Collectors.toList());
     }
 
     public HoldingDto buyStock(TransactionRequestDto request) {
+        Long userId = SecurityUtils.getCurrentUserId();
         String symbol = request.getSymbol().toUpperCase().trim();
+
+        // Enforce market hours for LIVE transactions only.
+        // MANUAL (historical/backdated) entries bypass this check.
+        if (request.getTransactionMode() == TransactionMode.LIVE) {
+            marketHoursService.assertMarketOpen(symbol);
+        }
 
         // Validate stock exists via Yahoo Finance
         StockInfoDto stockInfo = yahooFinanceService.getStockInfo(symbol);
 
         // Record transaction
         Transaction transaction = Transaction.builder()
+                .userId(userId)
                 .symbol(symbol)
                 .companyName(stockInfo.getCompanyName())
                 .transactionType(Transaction.TransactionType.BUY)
@@ -62,8 +87,9 @@ public class HoldingService {
         transactionRepository.save(transaction);
 
         // Update or create holding
-        Holding holding = holdingRepository.findBySymbol(symbol).orElse(
+        Holding holding = holdingRepository.findByUserIdAndSymbol(userId, symbol).orElse(
                 Holding.builder()
+                        .userId(userId)
                         .symbol(symbol)
                         .companyName(stockInfo.getCompanyName())
                         .sector(stockInfo.getSector())
@@ -81,19 +107,44 @@ public class HoldingService {
 
         holding.setQuantity(totalQuantity);
         holding.setAverageBuyPrice(newAveragePrice);
-        if (holding.getSector() == null && stockInfo.getSector() != null) {
+        // Always (re)set sector from Yahoo Finance — ensures existing holdings
+        // with null sector (from before the fetchSectorInfo bug was fixed)
+        // get backfilled on the next buy of that symbol.
+        if (stockInfo.getSector() != null && !stockInfo.getSector().isBlank()) {
             holding.setSector(stockInfo.getSector());
         }
 
-        Holding saved = holdingRepository.save(holding);
-        log.info("Bought {} shares of {} at {}", request.getQuantity(), symbol, request.getPrice());
+        Holding saved;
+        try {
+            saved = holdingRepository.save(holding);
+        } catch (DataIntegrityViolationException e) {
+            // Most likely cause: a stale single-column UNIQUE constraint on
+            // holdings(symbol) left over from a pre-multi-tenancy schema
+            // version (Hibernate's ddl-auto=update never drops old
+            // constraints). See migration-fix-holdings-unique-constraint.sql.
+            log.error("Holding save failed for user {} symbol {} due to a database constraint violation. " +
+                    "This usually indicates a stale unique index on holdings(symbol) — " +
+                    "run migration-fix-holdings-unique-constraint.sql.", userId, symbol, e);
+            throw new HoldingConflictException(
+                    "Could not save holding for " + symbol + " due to a database constraint conflict. " +
+                    "This is a known schema issue — please contact support or see " +
+                    "migration-fix-holdings-unique-constraint.sql.", e);
+        }
+
+        log.info("User {} bought {} shares of {} at {}", userId, request.getQuantity(), symbol, request.getPrice());
         return enrichWithCurrentPrice(saved);
     }
 
     public HoldingDto sellStock(TransactionRequestDto request) {
+        Long userId = SecurityUtils.getCurrentUserId();
         String symbol = request.getSymbol().toUpperCase().trim();
 
-        Holding holding = holdingRepository.findBySymbol(symbol)
+        // Enforce market hours for LIVE transactions only.
+        if (request.getTransactionMode() == TransactionMode.LIVE) {
+            marketHoursService.assertMarketOpen(symbol);
+        }
+
+        Holding holding = holdingRepository.findByUserIdAndSymbol(userId, symbol)
                 .orElseThrow(() -> new ResourceNotFoundException("No holding found for symbol: " + symbol));
 
         if (holding.getQuantity().compareTo(request.getQuantity()) < 0) {
@@ -104,8 +155,8 @@ public class HoldingService {
         }
 
         // Record transaction
-        StockInfoDto stockInfo = yahooFinanceService.getStockInfo(symbol);
         Transaction transaction = Transaction.builder()
+                .userId(userId)
                 .symbol(symbol)
                 .companyName(holding.getCompanyName())
                 .transactionType(Transaction.TransactionType.SELL)
@@ -120,7 +171,7 @@ public class HoldingService {
 
         if (remainingQuantity.compareTo(BigDecimal.ZERO) == 0) {
             holdingRepository.delete(holding);
-            log.info("Sold all {} shares of {} - holding removed", request.getQuantity(), symbol);
+            log.info("User {} sold all {} shares of {} - holding removed", userId, request.getQuantity(), symbol);
             return HoldingDto.builder()
                     .symbol(symbol)
                     .companyName(holding.getCompanyName())
@@ -130,7 +181,7 @@ public class HoldingService {
 
         holding.setQuantity(remainingQuantity);
         Holding saved = holdingRepository.save(holding);
-        log.info("Sold {} shares of {} at {}", request.getQuantity(), symbol, request.getPrice());
+        log.info("User {} sold {} shares of {} at {}", userId, request.getQuantity(), symbol, request.getPrice());
         return enrichWithCurrentPrice(saved);
     }
 

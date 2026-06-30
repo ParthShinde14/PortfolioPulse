@@ -2,8 +2,10 @@ package com.portfoliopulse.service;
 
 import com.portfoliopulse.dto.*;
 import com.portfoliopulse.entity.PortfolioSnapshot;
-import com.portfoliopulse.repository.HoldingRepository;
+import com.portfoliopulse.entity.User;
 import com.portfoliopulse.repository.PortfolioSnapshotRepository;
+import com.portfoliopulse.repository.UserRepository;
+import com.portfoliopulse.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,8 +25,8 @@ import java.util.stream.Collectors;
 public class AnalyticsService {
 
     private final HoldingService holdingService;
-    private final HoldingRepository holdingRepository;
     private final PortfolioSnapshotRepository snapshotRepository;
+    private final UserRepository userRepository;
 
     private static final String[] CHART_COLORS = {
             "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6",
@@ -32,13 +34,14 @@ public class AnalyticsService {
     };
 
     public DashboardDto getDashboard() {
+        Long userId = SecurityUtils.getCurrentUserId();
         List<HoldingDto> holdings = holdingService.getAllHoldings();
         PortfolioMetrics metrics = calculateMetrics(holdings);
 
         // Take snapshot for today
-        takeSnapshotIfNeeded(metrics);
+        takeSnapshotIfNeeded(userId, metrics);
 
-        List<PortfolioSnapshotDto> growth = getPortfolioGrowth();
+        List<PortfolioSnapshotDto> growth = getPortfolioGrowth(userId);
 
         return DashboardDto.builder()
                 .totalInvestment(metrics.totalInvestment)
@@ -79,11 +82,12 @@ public class AnalyticsService {
                 .worstPerformer(worstPerformer)
                 .assetAllocation(calculateAssetAllocation(holdings, metrics.currentValue))
                 .sectorAllocation(calculateSectorAllocation(holdings, metrics.currentValue))
-                .portfolioGrowth(getPortfolioGrowth())
+                .portfolioGrowth(getPortfolioGrowth(SecurityUtils.getCurrentUserId()))
                 .build();
     }
 
-    private PortfolioMetrics calculateMetrics(List<HoldingDto> holdings) {
+    /** Package-private so {@link BenchmarkService} and {@link PortfolioRiskService} can reuse the same calculation. */
+    PortfolioMetrics calculateMetrics(List<HoldingDto> holdings) {
         BigDecimal totalInvestment = holdings.stream()
                 .map(HoldingDto::getInvestedValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -167,8 +171,9 @@ public class AnalyticsService {
         return result;
     }
 
-    private List<PortfolioSnapshotDto> getPortfolioGrowth() {
-        return snapshotRepository.findAllByOrderBySnapshotDateAsc().stream()
+    /** Package-private so {@link BenchmarkService} can reuse the same growth series. */
+    List<PortfolioSnapshotDto> getPortfolioGrowth(Long userId) {
+        return snapshotRepository.findByUserIdOrderBySnapshotDateAsc(userId).stream()
                 .map(s -> PortfolioSnapshotDto.builder()
                         .id(s.getId())
                         .portfolioValue(s.getPortfolioValue())
@@ -180,11 +185,12 @@ public class AnalyticsService {
                 .collect(Collectors.toList());
     }
 
-    private void takeSnapshotIfNeeded(PortfolioMetrics metrics) {
+    private void takeSnapshotIfNeeded(Long userId, PortfolioMetrics metrics) {
         LocalDate today = LocalDate.now();
-        if (snapshotRepository.findBySnapshotDate(today).isPresent()) return;
+        if (snapshotRepository.findByUserIdAndSnapshotDate(userId, today).isPresent()) return;
 
         PortfolioSnapshot snapshot = PortfolioSnapshot.builder()
+                .userId(userId)
                 .portfolioValue(metrics.currentValue)
                 .totalInvestment(metrics.totalInvestment)
                 .profitLoss(metrics.profitLoss)
@@ -194,30 +200,32 @@ public class AnalyticsService {
         snapshotRepository.save(snapshot);
     }
 
-    // Scheduled daily snapshot at market close (4 PM EST)
+    // Scheduled daily snapshot at market close (4 PM EST) — runs for every registered user
     @Scheduled(cron = "0 0 21 * * MON-FRI")
     public void scheduledSnapshot() {
-        try {
-            List<HoldingDto> holdings = holdingService.getAllHoldings();
-            if (holdings.isEmpty()) return;
-            PortfolioMetrics metrics = calculateMetrics(holdings);
+        for (User user : userRepository.findAll()) {
+            try {
+                List<HoldingDto> holdings = holdingService.getAllHoldingsForUser(user.getId());
+                if (holdings.isEmpty()) continue;
+                PortfolioMetrics metrics = calculateMetrics(holdings);
 
-            LocalDate today = LocalDate.now();
-            PortfolioSnapshot snapshot = snapshotRepository.findBySnapshotDate(today)
-                    .orElse(PortfolioSnapshot.builder().snapshotDate(today).build());
+                LocalDate today = LocalDate.now();
+                PortfolioSnapshot snapshot = snapshotRepository.findByUserIdAndSnapshotDate(user.getId(), today)
+                        .orElse(PortfolioSnapshot.builder().userId(user.getId()).snapshotDate(today).build());
 
-            snapshot.setPortfolioValue(metrics.currentValue);
-            snapshot.setTotalInvestment(metrics.totalInvestment);
-            snapshot.setProfitLoss(metrics.profitLoss);
-            snapshot.setProfitPercentage(metrics.profitLossPercent);
-            snapshotRepository.save(snapshot);
-            log.info("Daily portfolio snapshot saved for {}", today);
-        } catch (Exception e) {
-            log.error("Failed to save scheduled snapshot: {}", e.getMessage());
+                snapshot.setPortfolioValue(metrics.currentValue);
+                snapshot.setTotalInvestment(metrics.totalInvestment);
+                snapshot.setProfitLoss(metrics.profitLoss);
+                snapshot.setProfitPercentage(metrics.profitLossPercent);
+                snapshotRepository.save(snapshot);
+                log.info("Daily portfolio snapshot saved for user {} on {}", user.getId(), today);
+            } catch (Exception e) {
+                log.error("Failed to save scheduled snapshot for user {}: {}", user.getId(), e.getMessage());
+            }
         }
     }
 
-    private record PortfolioMetrics(
+    record PortfolioMetrics(
             BigDecimal totalInvestment,
             BigDecimal currentValue,
             BigDecimal profitLoss,

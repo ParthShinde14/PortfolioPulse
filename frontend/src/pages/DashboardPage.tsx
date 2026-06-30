@@ -4,8 +4,9 @@ import {
   DollarSign, TrendingUp, TrendingDown, Briefcase, Plus, Minus,
   Shield, PieChart as PieIcon, AlertTriangle, ArrowRight
 } from 'lucide-react';
-import { getDashboard, getRiskMetrics } from '../api/client';
-import type { Dashboard, RiskMetrics } from '../types';
+import { getDashboard, getRiskMetrics, getWatchlist, getBenchmark } from '../api/client';
+import type { Dashboard, RiskMetrics, WatchlistItem, Benchmark, BenchmarkKey } from '../types';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import Header from '../components/layout/Header';
 import StatCard from '../components/ui/StatCard';
 import { CardSkeleton, ChartSkeleton, TableSkeleton } from '../components/ui/Skeleton';
@@ -14,6 +15,8 @@ import GrowthChart from '../components/charts/GrowthChart';
 import AllocationChart from '../components/charts/AllocationChart';
 import EmptyState from '../components/ui/EmptyState';
 import HealthScoreRing from '../components/ui/HealthScoreRing';
+import WatchlistPreview from '../components/ui/WatchlistPreview';
+import BenchmarkCard from '../components/ui/BenchmarkCard';
 import { fmt, profitClass } from '../utils/format';
 
 export default function DashboardPage() {
@@ -26,21 +29,69 @@ export default function DashboardPage() {
   const [risk, setRisk]               = useState<RiskMetrics | null>(null);
   const [riskLoading, setRiskLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    setLoading(true); setError('');
+  // Watchlist preview (additive)
+  const [watchlist, setWatchlist]         = useState<WatchlistItem[]>([]);
+  const [watchlistLoading, setWLLoading]  = useState(true);
+
+  // Benchmark comparison (additive)
+  const [benchmark, setBenchmark]               = useState<Benchmark | null>(null);
+  const [benchmarkLoading, setBenchmarkLoading] = useState(true);
+  const [benchmarkKey, setBenchmarkKey]         = useState<BenchmarkKey>('SP500');
+
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    setError('');
     try { setData(await getDashboard()); }
-    catch (e: any) { setError(e.message); }
-    finally { setLoading(false); }
+    catch (e: any) { if (!silent) setError(e.message); }
+    finally { if (!silent) setLoading(false); }
   }, []);
 
-  const loadRisk = useCallback(async () => {
-    setRiskLoading(true);
+  const loadRisk = useCallback(async (silent = false) => {
+    if (!silent) setRiskLoading(true);
     try { setRisk(await getRiskMetrics()); }
     catch { /* non-critical — silently ignore on dashboard */ }
-    finally { setRiskLoading(false); }
+    finally { if (!silent) setRiskLoading(false); }
   }, []);
 
-  useEffect(() => { load(); loadRisk(); }, [load, loadRisk]);
+  const loadWatchlist = useCallback(async (silent = false) => {
+    if (!silent) setWLLoading(true);
+    try { setWatchlist(await getWatchlist()); }
+    catch { /* non-critical */ }
+    finally { if (!silent) setWLLoading(false); }
+  }, []);
+
+  const loadBenchmark = useCallback(async (key: BenchmarkKey, silent = false) => {
+    if (!silent) setBenchmarkLoading(true);
+    try { setBenchmark(await getBenchmark(key)); }
+    catch { /* non-critical */ }
+    finally { if (!silent) setBenchmarkLoading(false); }
+  }, []);
+
+  // ── Initial load on mount ──────────────────────────────────────────────
+  useEffect(() => { load(); loadRisk(); loadWatchlist(); loadBenchmark(benchmarkKey); }, [load, loadRisk, loadWatchlist]);
+
+  // ── Market data refresh strategy ────────────────────────────────────────
+  // 1. Initial fetch on dashboard load — handled by the mount effect above.
+  // 2. Auto-refresh every 180s while the dashboard stays open.
+  // 3. Immediate refresh when the user switches back to this tab.
+  // 4. All polling/listeners are cleaned up automatically on unmount, and
+  //    no refresh fires while the tab is hidden (see useAutoRefresh).
+  // benchmarkKey isn't re-derived inside refreshAll's dependency array on
+  // every keystroke-like change — it's read fresh on each call via closure,
+  // which is safe because useAutoRefresh stores the callback in a ref.
+  const refreshAll = useCallback(() => {
+    load(true);
+    loadRisk(true);
+    loadWatchlist(true);
+    loadBenchmark(benchmarkKey, true);
+  }, [load, loadRisk, loadWatchlist, loadBenchmark, benchmarkKey]);
+
+  useAutoRefresh(refreshAll, { intervalMs: 180_000 });
+
+  const handleBenchmarkSelect = (key: BenchmarkKey) => {
+    setBenchmarkKey(key);
+    loadBenchmark(key);
+  };
 
   const d = data;
   const hasRisk = risk && risk.diversificationRating !== 'N/A';
@@ -50,7 +101,7 @@ export default function DashboardPage() {
       <Header
         title="Dashboard"
         subtitle="Real-time portfolio overview"
-        onRefresh={load}
+        onRefresh={() => load(false)}
         loading={loading}
         actions={
           <div className="flex gap-2">
@@ -179,6 +230,19 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Watchlist preview + Benchmark comparison */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <WatchlistPreview items={watchlist} loading={watchlistLoading} />
+          <div className="xl:col-span-2">
+            <BenchmarkCard
+              data={benchmark}
+              loading={benchmarkLoading}
+              selected={benchmarkKey}
+              onSelect={handleBenchmarkSelect}
+            />
+          </div>
         </div>
 
         {/* Charts row */}

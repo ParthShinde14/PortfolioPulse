@@ -1,4 +1,5 @@
 import { RefreshCw } from 'lucide-react';
+import UserMenu from '../ui/UserMenu';
 
 interface Props {
   title: string;
@@ -28,6 +29,8 @@ export default function Header({ title, subtitle, onRefresh, loading, actions }:
             Refresh
           </button>
         )}
+        <div className="w-px h-6 bg-surface-200 mx-1" />
+        <UserMenu />
       </div>
     </div>
   );

@@ -1,13 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, ArrowLeftRight,
-  BarChart3, TrendingUp, Shield
+  BarChart3, TrendingUp, Shield, Eye
 } from 'lucide-react';
 
 const NAV = [
   { to: '/',             icon: LayoutDashboard, label: 'Dashboard'    },
   { to: '/holdings',     icon: Briefcase,       label: 'Holdings'     },
   { to: '/transactions', icon: ArrowLeftRight,  label: 'Transactions' },
+  { to: '/watchlist',    icon: Eye,             label: 'Watchlist'    },
   { to: '/analytics',    icon: BarChart3,       label: 'Analytics'    },
   { to: '/health',       icon: Shield,          label: 'Health & Risk'},
 ];
@@ -57,7 +58,7 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="px-5 py-4 border-t border-surface-200">
         <p className="text-xs text-slate-400">Market data via Yahoo Finance</p>
-        <p className="text-xs text-slate-300 mt-0.5">Prices 15 min delayed</p>
+        <p className="text-xs text-slate-300 mt-0.5">Prices 3 min delayed</p>
       </div>
     </aside>
   );
